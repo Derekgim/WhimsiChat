@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Post and Comment System</title>
+</head>
+<body>
+    <h1>WhimsiChat</h1>
+    <h3>Create a Post</h3>
+    <form id="post-form">
+        <label for="post-content">Enter your text:</label><br>
+        <textarea id="post-content" name="post-content" rows="5" cols="50" required></textarea><br>
+        <button type="button" id="post-button">Submit Post</button>
+    </form>
+
+    <div id="posts">
+        <!-- Posted content will appear here -->
+    </div>
+
+    <script>
+        // Function to save posts and comments to localStorage
+        function saveData() {
+            var posts = document.getElementById("posts").innerHTML;
+            localStorage.setItem("forumData", JSON.stringify(forumData));
+        }
+
+        // Function to load posts and comments from localStorage
+        function loadData() {
+            var savedData = localStorage.getItem("forumData");
+            if (savedData) {
+                forumData = JSON.parse(savedData);
+                renderPosts();
+            }
+        }
+
+        // Initialize forumData as an empty array
+        var forumData = [];
+
+        // Function to render posts and comments
+        function renderPosts() {
+            var postsContainer = document.getElementById("posts");
+            postsContainer.innerHTML = "";
+
+            forumData.forEach(function (post) {
+                var postDiv = document.createElement("div");
+                postDiv.classList.add("post");
+
+                var postContent = document.createElement("p");
+                postContent.textContent = post.text;
+                postDiv.appendChild(postContent);
+
+                var commentForm = document.createElement("form");
+                var commentInput = document.createElement("input");
+                commentInput.type = "text";
+                commentInput.placeholder = "Add a comment...";
+                commentInput.classList.add("comment-input");
+                var commentButton = document.createElement("button");
+                commentButton.type = "button";
+                commentButton.textContent = "Comment";
+
+                commentForm.appendChild(commentInput);
+                commentForm.appendChild(commentButton);
+                postDiv.appendChild(commentForm);
+
+                commentButton.addEventListener("click", function () {
+                    var commentText = commentInput.value;
+                    if (commentText.trim() !== "") {
+                        post.comments.push(commentText);
+                        renderPosts();
+                        saveData();
+                        commentInput.value = "";
+                    }
+                });
+
+                if (post.comments && post.comments.length > 0) {
+                    var commentList = document.createElement("ul");
+                    post.comments.forEach(function (commentText) {
+                        var commentItem = document.createElement("li");
+                        commentItem.textContent = commentText;
+                        commentList.appendChild(commentItem);
+                    });
+                    postDiv.appendChild(commentList);
+                }
+
+                postsContainer.appendChild(postDiv);
+            });
+        }
+
+        document.getElementById("post-button").addEventListener("click", function () {
+            var postContent = document.getElementById("post-content").value;
+            if (postContent.trim() !== "") {
+                var newPost = {
+                    text: postContent,
+                    comments: [],
+                };
+                forumData.push(newPost);
+                renderPosts();
+                saveData();
+                document.getElementById("post-content").value = "";
+            }
+        });
+
+        // Load existing data on page load
+        loadData();
+    </script>
+
+    <style>
+        /* Style the posts */
+        .post {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</body>
+</html>
